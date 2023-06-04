@@ -1,0 +1,26 @@
+import 'package:flutter/material.dart';
+
+abstract class CommonScaffold<S extends StatefulWidget> extends State<S> {
+  @protected
+  Widget buildBody(BuildContext context);
+
+  PreferredSizeWidget? buildAppBar() => AppBar(
+        automaticallyImplyLeading: false,
+      );
+
+  ///Default FloatingActionButton
+  Widget? buildFloatingActionButton() => null;
+
+  FloatingActionButtonLocation? floatingActionButtonLocation() => null;
+
+  Widget? bottomNavBar() => null;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: buildAppBar(),
+        bottomNavigationBar: bottomNavBar(),
+        floatingActionButton: buildFloatingActionButton(),
+        floatingActionButtonLocation: floatingActionButtonLocation(),
+        body: buildBody(context),
+      );
+}

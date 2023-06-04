@@ -1,0 +1,43 @@
+{
+  "house": "Bragu",
+  "data": {
+    "expenses": {
+      "services": [
+        {
+          "id": 0,
+          "name": "EMI",
+          "start_date": "2025-01-01",
+          "end_date": "2025-01-01",
+          "amount": 3500
+        },
+        {
+          "id": 1,
+          "name": "Petrol",
+          "start_date": "2025-01-01",
+          "end_date": "2025-01-01",
+          "amount": 3000
+        }
+      ],
+      "total": 16500
+    },
+    "savings": {
+      "services": [
+        {
+          "id": 0,
+          "name": "RD",
+          "start_date": "2025-01-01",
+          "end_date": "2025-01-01",
+          "amount": 5000
+        },
+        {
+          "id": 1,
+          "name": "Stocks",
+          "start_date": "2025-01-01",
+          "end_date": "2025-01-01",
+          "amount": 2000
+        }
+      ],
+      "total": 15200
+    }
+  }
+}

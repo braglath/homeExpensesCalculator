@@ -1,0 +1,1 @@
+enum ServiceType { expense, savings }
