@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:homeexpensecalculator/utils/app_icons.dart';
 
 class AppConstants {
+  AppConstants._internal();
+  factory AppConstants() => _singleton;
+  static final AppConstants _singleton = AppConstants._internal();
+
   static List<PopupMenuEntry<dynamic>> servicesContextMenu({
     required Function()? favOnTap,
     required Function()? editOnTap,
@@ -56,4 +60,10 @@ class AppConstants {
               children: <Widget>[const Text('Delete'), AppIcons.delete]),
         ),
       ];
+
+  static EdgeInsetsGeometry? pad16 = const EdgeInsets.all(16);
+
+  static SizedBox width25 = const SizedBox(width: 25);
+  static SizedBox height10 = const SizedBox(height: 10);
+  static SizedBox height20 = const SizedBox(height: 20);
 }

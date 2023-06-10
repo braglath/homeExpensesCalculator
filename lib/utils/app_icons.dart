@@ -18,4 +18,10 @@ class AppIcons {
         color: Colors.grey[300],
         size: 18,
       );
+  static Icon get refresh => const Icon(Icons.refresh);
+  static Icon get backIcon => const Icon(
+        Icons.chevron_left,
+        size: 35,
+        color: Colors.white,
+      );
 }

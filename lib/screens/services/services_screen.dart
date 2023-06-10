@@ -11,8 +11,10 @@ import 'package:homeexpensecalculator/helpers/functions/dialogues.dart';
 import 'package:homeexpensecalculator/helpers/functions/input_formatters.dart';
 import 'package:homeexpensecalculator/helpers/mixins/field_validations.dart';
 import 'package:homeexpensecalculator/providers/services/services_provider.dart';
+import 'package:homeexpensecalculator/utils/app_constants.dart';
 import 'package:homeexpensecalculator/utils/app_enum.dart';
 import 'package:homeexpensecalculator/utils/app_icons.dart';
+import 'package:homeexpensecalculator/widgets/common_elevated_button.dart';
 import 'package:homeexpensecalculator/widgets/common_scaffold.dart';
 import 'package:homeexpensecalculator/widgets/slidable_widget.dart';
 import 'package:provider/provider.dart';
@@ -95,8 +97,8 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
 
     return Container(
       width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.all(16),
+      padding: AppConstants.pad16,
+      margin: AppConstants.pad16,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16), color: Colors.blue[800]),
       child: Column(
@@ -120,7 +122,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
                   .copyWith(color: Colors.white),
             ),
           ])),
-          const SizedBox(height: 10),
+          AppConstants.height10,
           Align(
             alignment: Alignment.bottomRight,
             child: Container(
@@ -353,7 +355,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
               validator: (String? title) => emptyValidation(title),
             ),
           ),
-          const SizedBox(height: 10),
+          AppConstants.height10,
           Form(
             key: amountFieldFormKey,
             autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -368,7 +370,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
               validator: (String? amount) => emptyValidation(amount),
             ),
           ),
-          const SizedBox(height: 10),
+          AppConstants.height10,
           Row(
             children: <Widget>[
               Expanded(
@@ -578,33 +580,23 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
       );
 
   @override
-  Widget? bottomNavBar() => FractionallySizedBox(
-        heightFactor: 0.1,
-        widthFactor: 1,
-        child: SizedBox(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              const SizedBox(width: 20),
-              Expanded(
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepOrange,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30))),
-                      onPressed: () {},
-                      child: const Text("Cancel"))),
-              const SizedBox(width: 20),
-              Expanded(
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30))),
-                      onPressed: () {},
-                      child: const Text("Save"))),
-              const SizedBox(width: 20),
-            ],
-          ),
+  Widget? bottomNavBar() => SizedBox(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            const SizedBox(width: 20),
+            CommonElevatedButton(
+              text: 'Cancel',
+              color: Colors.deepOrange,
+              onTap: () {},
+            ),
+            const SizedBox(width: 20),
+            CommonElevatedButton(
+              text: 'Save',
+              onTap: () {},
+            ),
+            const SizedBox(width: 20),
+          ],
         ),
       );
 

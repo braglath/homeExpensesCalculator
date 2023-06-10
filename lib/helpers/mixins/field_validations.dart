@@ -7,4 +7,15 @@ mixin FieldValidationMixin {
     }
     return null;
   }
+
+  String? homeTitleValidation(String? value) {
+    if (value.isNullOrEmpty || value!.trim().isEmpty) {
+      return 'cannot be empty';
+    }
+    final String val = value.trim();
+    if (val.length < 4) {
+      return "more than 4";
+    }
+    return null;
+  }
 }

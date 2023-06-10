@@ -18,7 +18,11 @@ abstract class CommonScaffold<S extends StatefulWidget> extends State<S> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: buildAppBar(),
-        bottomNavigationBar: bottomNavBar(),
+        bottomNavigationBar: FractionallySizedBox(
+          heightFactor: 0.1,
+          widthFactor: 1,
+          child: bottomNavBar(),
+        ),
         floatingActionButton: buildFloatingActionButton(),
         floatingActionButtonLocation: floatingActionButtonLocation(),
         body: buildBody(context),
