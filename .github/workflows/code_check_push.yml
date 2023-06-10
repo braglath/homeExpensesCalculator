@@ -28,7 +28,7 @@ jobs:
       - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
 
       - name: Install dependencies
-        run: flutter pub
+        run: flutter pub get
 
       - name: Format code
         run: dart format --set-exit-if-changed lib
