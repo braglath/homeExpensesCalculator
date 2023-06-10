@@ -18,7 +18,8 @@ class MyApp extends StatelessWidget {
               create: (_) => ServicesProvider())
         ],
         child: MaterialApp(
-          title: 'Flutter Demo',
+          debugShowCheckedModeBanner: false,
+          title: 'Home Expense Calculator',
           theme: AppTheme.light,
           home: const ServicesView(),
         ),

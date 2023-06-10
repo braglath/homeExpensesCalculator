@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:convert';
 
 MainDbModel mainDbModelFromJson(String str) =>
@@ -6,6 +8,10 @@ MainDbModel mainDbModelFromJson(String str) =>
 String mainDbModelToJson(MainDbModel data) => json.encode(data.toJson());
 
 class MainDbModel {
+  factory MainDbModel.fromJson(Map<String, dynamic> json) => MainDbModel(
+        house: json["house"],
+        data: Data.fromJson(json["data"]),
+      );
   MainDbModel({
     required this.house,
     required this.data,
@@ -22,25 +28,24 @@ class MainDbModel {
         data: data ?? this.data,
       );
 
-  factory MainDbModel.fromJson(Map<String, dynamic> json) => MainDbModel(
-        house: json["house"],
-        data: Data.fromJson(json["data"]),
-      );
-
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => <String, dynamic>{
         "house": house,
         "data": data.toJson(),
       };
 }
 
 class Data {
-  final Expenses expenses;
-  final Expenses savings;
-
   Data({
     required this.expenses,
     required this.savings,
   });
+
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
+        expenses: Expenses.fromJson(json["expenses"]),
+        savings: Expenses.fromJson(json["savings"]),
+      );
+  final Expenses expenses;
+  final Expenses savings;
 
   Data copyWith({
     Expenses? expenses,
@@ -51,18 +56,18 @@ class Data {
         savings: savings ?? this.savings,
       );
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-        expenses: Expenses.fromJson(json["expenses"]),
-        savings: Expenses.fromJson(json["savings"]),
-      );
-
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => <String, dynamic>{
         "expenses": expenses.toJson(),
         "savings": savings.toJson(),
       };
 }
 
 class Expenses {
+  factory Expenses.fromJson(Map<String, dynamic> json) => Expenses(
+        services: List<Service>.from(
+            json["services"].map((dynamic x) => Service.fromJson(x))),
+        total: json["total"],
+      );
   Expenses({
     required this.services,
     required this.total,
@@ -79,19 +84,20 @@ class Expenses {
         total: total ?? this.total,
       );
 
-  factory Expenses.fromJson(Map<String, dynamic> json) => Expenses(
-        services: List<Service>.from(
-            json["services"].map((x) => Service.fromJson(x))),
-        total: json["total"],
-      );
-
-  Map<String, dynamic> toJson() => {
-        "services": List<dynamic>.from(services.map((x) => x.toJson())),
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        "services": List<dynamic>.from(services.map((Service x) => x.toJson())),
         "total": total,
       };
 }
 
 class Service {
+  factory Service.fromJson(Map<String, dynamic> json) => Service(
+        id: json["id"],
+        name: json["name"],
+        startDate: DateTime.parse(json["start_date"]),
+        endDate: DateTime.parse(json["end_date"]),
+        amount: json["amount"],
+      );
   Service({
     required this.id,
     required this.name,
@@ -121,15 +127,7 @@ class Service {
         amount: amount ?? this.amount,
       );
 
-  factory Service.fromJson(Map<String, dynamic> json) => Service(
-        id: json["id"],
-        name: json["name"],
-        startDate: DateTime.parse(json["start_date"]),
-        endDate: DateTime.parse(json["end_date"]),
-        amount: json["amount"],
-      );
-
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => <String, dynamic>{
         "id": id,
         "name": name,
         "start_date":

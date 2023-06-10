@@ -1,0 +1,43 @@
+name: Dart
+
+on:
+  pull_request:
+    branches: ["dev_staging", "dev"]
+
+jobs:
+  code_quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses:
+          actions/checkout@v1
+          # The flutter action needs java so include it
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+      # Include the flutter action
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+      # Get flutter packages
+
+      # Note: This workflow uses the latest stable version of the Dart SDK.
+      # You can specify other versions if desired, see documentation here:
+      # https://github.com/dart-lang/setup-dart/blob/main/README.md
+      # - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+
+      - name: Install dependencies
+        run: flutter pub
+
+      - name: Format code
+        run: dart format --set-exit-if-changed lib
+
+      - name: Auto quick-fix on lint errors
+        run: dart fix --apply
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test

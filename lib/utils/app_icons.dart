@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class AppIcons {
-  factory AppIcons() => _AppIcons;
+  factory AppIcons() => _appIcons;
   AppIcons._internal();
-  static final AppIcons _AppIcons = AppIcons._internal();
+  static final AppIcons _appIcons = AppIcons._internal();
 
   static Icon get date => const Icon(Icons.date_range);
   static Icon get add => const Icon(Icons.add);

@@ -458,7 +458,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
             Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 Text(title, style: Theme.of(context).textTheme.headlineSmall),
                 IconButton(
                     padding: EdgeInsets.zero,
@@ -589,7 +589,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
               Expanded(
                   child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          primary: Colors.deepOrange,
+                          backgroundColor: Colors.deepOrange,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30))),
                       onPressed: () {},

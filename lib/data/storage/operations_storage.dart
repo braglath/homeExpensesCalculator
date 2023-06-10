@@ -13,7 +13,8 @@ class ExpensesStorageOperations {
 
 // create and open the database
   Future<void> createTable(String dbPath) async {
-    Database database = await openDatabase(dbPath, version: 1,
+    // Database database =
+    await openDatabase(dbPath, version: 1,
         onCreate: (Database db, int version) async {
       // When creating the db, create the table
       await db.execute('''

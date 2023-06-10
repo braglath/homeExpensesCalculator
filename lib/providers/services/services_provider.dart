@@ -68,7 +68,7 @@ class ServicesProvider extends ChangeNotifier {
 
   List<ServicesModel> get expensesList => _expensesList;
 
-  int _earnings = 74000;
+  final int _earnings = 74000;
   int get earnings => _earnings;
   int _balance = 0;
   int get balance => _balance;
