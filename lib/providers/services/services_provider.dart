@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:homeexpensecalculator/data/models/services_model.dart';
+import 'package:homeexpensecalculator/data/storage/expenses_storage_operations.dart';
+import 'package:homeexpensecalculator/data/storage/individual_service_model_storage.dart';
+import 'package:homeexpensecalculator/data/storage/storage_operations.dart';
 import 'package:homeexpensecalculator/utils/app_enum.dart';
+import 'package:sqflite/sqlite_api.dart';
 
 class ServicesProvider extends ChangeNotifier {
   final List<ServicesModel> _savingsList = <ServicesModel>[
     ServicesModel(
+      id: 0,
       serviceType: ServiceType.savings,
       name: "Saravana Stores Gold Savings",
       cost: 5000,
@@ -13,6 +18,7 @@ class ServicesProvider extends ChangeNotifier {
       comment: '',
     ),
     ServicesModel(
+      id: 0,
       serviceType: ServiceType.savings,
       name: "RD",
       cost: 10000,
@@ -21,6 +27,7 @@ class ServicesProvider extends ChangeNotifier {
       comment: '',
     ),
     ServicesModel(
+      id: 0,
       serviceType: ServiceType.savings,
       name: "Stocks",
       cost: 200,
@@ -31,40 +38,7 @@ class ServicesProvider extends ChangeNotifier {
   ];
   List<ServicesModel> get savingsList => _savingsList;
 
-  final List<ServicesModel> _expensesList = <ServicesModel>[
-    ServicesModel(
-      serviceType: ServiceType.expense,
-      name: "EMI",
-      cost: 3500,
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
-      comment: '',
-    ),
-    ServicesModel(
-      serviceType: ServiceType.expense,
-      name: "Petrol",
-      cost: 3000,
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
-      comment: '',
-    ),
-    ServicesModel(
-      serviceType: ServiceType.expense,
-      name: "Sofa",
-      cost: 4500,
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
-      comment: '',
-    ),
-    ServicesModel(
-      serviceType: ServiceType.expense,
-      name: "Vanitha Aunty",
-      cost: 5500,
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
-      comment: '',
-    ),
-  ];
+  final List<ServicesModel> _expensesList = <ServicesModel>[];
 
   List<ServicesModel> get expensesList => _expensesList;
 
@@ -90,6 +64,31 @@ class ServicesProvider extends ChangeNotifier {
   bool _savingsListExpanded = true;
   bool get savingsListExpanded => _savingsListExpanded;
 
+  Database? database;
+
+  Future<void> viewModelInitState() async {
+    database = await DatabaseOperations.db();
+    await getExpensesListFromStorage();
+    addAmount();
+  }
+
+  Future<void> getExpensesListFromStorage() async {
+    final List<IndividualServiceModel> listFromStorage =
+        await ExpensesStorageOperations.getAllExpenses();
+    final List<ServicesModel> valueList = listFromStorage
+        .map((IndividualServiceModel e) => ServicesModel(
+            id: e.id ?? 0,
+            serviceType: ServiceType.expense,
+            name: e.name,
+            cost: e.cost,
+            startDate: e.startDate,
+            endDate: e.endDate,
+            comment: e.comment))
+        .toList();
+    _expensesList.addAll(valueList);
+    notifyListeners();
+  }
+
   void setExpensesListExpandedStatus(bool isExpanded) {
     _expensesListExpanded = isExpanded;
     notifyListeners();
@@ -108,10 +107,6 @@ class ServicesProvider extends ChangeNotifier {
   void setReOrderSavingsListStatus(bool status) {
     _reOrderSavingsListStatus = status;
     notifyListeners();
-  }
-
-  void viewModelInitState() {
-    addAmount();
   }
 
   void viewModelDisposeState() {
@@ -155,10 +150,18 @@ class ServicesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addService(ServicesModel service) {
+  Future<void> addService(ServicesModel service) async {
     if (service.serviceType == ServiceType.expense) {
       _expensesList.add(service);
       addTotalExpenses(service.cost);
+      await ExpensesStorageOperations.addExpenses(IndividualServiceModel(
+        type: 1,
+        name: service.name,
+        startDate: service.startDate,
+        endDate: service.endDate,
+        comment: service.comment,
+        cost: service.cost,
+      ));
     } else {
       _savingsList.add(service);
       addTotalSavings(service.cost);
@@ -178,8 +181,9 @@ class ServicesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteServiceFromExpensesList(ServicesModel service) {
+  Future<void> deleteServiceFromExpensesList(ServicesModel service) async {
     _expensesList.remove(service);
+    await ExpensesStorageOperations.deleteExpense(service.id);
     addAmount();
     notifyListeners();
   }
@@ -190,10 +194,19 @@ class ServicesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateExpensesService(ServicesModel service, int index) {
+  Future<void> updateExpensesService(ServicesModel service, int index) async {
     _expensesList
       ..removeAt(index)
       ..insert(index, service);
+    await ExpensesStorageOperations.updateExpense(IndividualServiceModel(
+      id: service.id,
+      type: 1,
+      name: service.name,
+      startDate: service.startDate,
+      endDate: service.endDate,
+      comment: service.comment,
+      cost: service.cost,
+    ));
     addAmount();
     notifyListeners();
   }
@@ -206,7 +219,7 @@ class ServicesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addServiceToExpensesList(ServicesModel service) {
+  Future<void> addServiceToExpensesList(ServicesModel service) async {
     _savingsList.remove(service);
     _expensesList.insert(0, service);
     addAmount();

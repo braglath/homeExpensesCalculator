@@ -43,6 +43,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
   @override
   void initState() {
     super.initState();
+    // ignore: discarded_futures
     context.read<ServicesProvider>().viewModelInitState();
   }
 
@@ -188,50 +189,61 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
       },
       itemBuilder: (BuildContext context, int index) {
         final ServicesModel service = expensesList[index];
+
         return SlidableWidget(
           key: Key('$index'),
           leftBtnOnPressed: (_) async {
             await _editExpensesService(service, index);
           },
-          rightBtnOnPressed: (_) => context
+          rightBtnOnPressed: (_) async => context
               .read<ServicesProvider>()
               .deleteServiceFromExpensesList(service),
-          child: _individualService(
-              service: service,
-              index: index,
-              onLongPressStart: context
-                      .read<ServicesProvider>()
-                      .reOrderExpensesListStatus
-                  ? null
-                  : (LongPressStartDetails longPressPosition) async {
-                      await ContextMenu.showServicesContextMenu(
-                        context,
-                        offset: longPressPosition.globalPosition,
-                        isExpenses: true,
-                        favOnTap: () {
-                          // TODO: implement fav functionality
-                        },
-                        editOnTap: () async {
-                          FocusScope.of(context).unfocus();
-                          Future<void>.delayed(Duration.zero,
-                              () async => _editExpensesService(service, index));
-                        },
-                        commentOnTap: () {
-                          // TODO: implement add comment functionality
-                        },
-                        moveToOnTap: () {
-                          FocusScope.of(context).unfocus();
-                          Future<void>.delayed(
-                              Duration.zero,
-                              () => context
-                                  .read<ServicesProvider>()
-                                  .addServiceToSavingsList(service));
-                        },
-                        deleteOnTap: () => context
-                            .read<ServicesProvider>()
-                            .deleteServiceFromExpensesList(service),
-                      );
-                    }),
+          child: Column(
+            children: <Widget>[
+              if (index != expensesList.length && index != 0) const Divider(),
+              _individualService(
+                  service: service,
+                  index: index,
+                  tileColor:
+                      context.read<ServicesProvider>().reOrderExpensesListStatus
+                          ? Colors.grey[200]
+                          : null,
+                  onLongPressStart:
+                      context.read<ServicesProvider>().reOrderExpensesListStatus
+                          ? null
+                          : (LongPressStartDetails longPressPosition) async {
+                              await ContextMenu.showServicesContextMenu(
+                                context,
+                                offset: longPressPosition.globalPosition,
+                                isExpenses: true,
+                                favOnTap: () {
+                                  // TODO: implement fav functionality
+                                },
+                                editOnTap: () async {
+                                  FocusScope.of(context).unfocus();
+                                  Future<void>.delayed(
+                                      Duration.zero,
+                                      () async =>
+                                          _editExpensesService(service, index));
+                                },
+                                commentOnTap: () {
+                                  // TODO: implement add comment functionality
+                                },
+                                moveToOnTap: () {
+                                  FocusScope.of(context).unfocus();
+                                  Future<void>.delayed(
+                                      Duration.zero,
+                                      () => context
+                                          .read<ServicesProvider>()
+                                          .addServiceToSavingsList(service));
+                                },
+                                deleteOnTap: () async => context
+                                    .read<ServicesProvider>()
+                                    .deleteServiceFromExpensesList(service),
+                              );
+                            }),
+            ],
+          ),
         );
       },
     );
@@ -259,11 +271,20 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
             rightBtnOnPressed: (_) => context
                 .read<ServicesProvider>()
                 .deleteServiceFromSavingsList(service),
-            child: _individualService(
-                service: service,
-                index: index,
-                onLongPressStart:
-                    context.read<ServicesProvider>().reOrderSavingsListStatus
+            child: Column(
+              children: <Widget>[
+                if (index != savingsList.length && index != 0) const Divider(),
+                _individualService(
+                    service: service,
+                    index: index,
+                    tileColor: context
+                            .read<ServicesProvider>()
+                            .reOrderSavingsListStatus
+                        ? Colors.grey[200]
+                        : null,
+                    onLongPressStart: context
+                            .read<ServicesProvider>()
+                            .reOrderSavingsListStatus
                         ? null
                         : (LongPressStartDetails longPressPosition) async {
                             await ContextMenu.showServicesContextMenu(
@@ -283,11 +304,11 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
                               commentOnTap: () {
                                 // TODO: implement add comment functionality
                               },
-                              moveToOnTap: () {
+                              moveToOnTap: () async {
                                 FocusScope.of(context).unfocus();
                                 Future<void>.delayed(
                                     Duration.zero,
-                                    () => context
+                                    () async => context
                                         .read<ServicesProvider>()
                                         .addServiceToExpensesList(service));
                               },
@@ -295,13 +316,18 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
                                   .read<ServicesProvider>()
                                   .deleteServiceFromSavingsList(service),
                             );
-                          }));
+                          }),
+              ],
+            ));
       },
     );
   }
 
   Future<void> _showAddDialogue(
-          {required bool isExpenses, bool isEdit = false, int? index}) async =>
+          {required bool isExpenses,
+          bool isEdit = false,
+          int? index,
+          int? id}) async =>
       Dialogue.showAlertDialogue(
         context,
         title:
@@ -312,10 +338,11 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
           _clearAllValues();
         },
         actionBtnTitle: isEdit ? "Save" : "Add",
-        onAction: (BuildContext ctx) {
+        onAction: (BuildContext ctx) async {
           if (!_allFieldsValidationStatus()) return;
           // else all fields are valid
           final ServicesModel service = ServicesModel(
+            id: id ?? 0,
             serviceType: isExpenses ? ServiceType.expense : ServiceType.savings,
             name: titleTextController.text,
             cost: amountTextController.text.toInt,
@@ -325,7 +352,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
           );
           if (isEdit) {
             if (isExpenses) {
-              context
+              await context
                   .read<ServicesProvider>()
                   .updateExpensesService(service, index!);
             } else {
@@ -335,9 +362,9 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
             }
           } else {
             // else adding new service
-            context.read<ServicesProvider>().addService(service);
+            await context.read<ServicesProvider>().addService(service);
           }
-          ctx.pop();
+          if (mounted) await ctx.pop();
         },
       );
 
@@ -531,14 +558,15 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
     );
   }
 
-  Widget _individualService({
-    required ServicesModel service,
-    required int index,
-    required Function(LongPressStartDetails)? onLongPressStart,
-  }) =>
+  Widget _individualService(
+          {required ServicesModel service,
+          required int index,
+          required Function(LongPressStartDetails)? onLongPressStart,
+          required Color? tileColor}) =>
       GestureDetector(
         onLongPressStart: onLongPressStart,
         child: ListTile(
+          tileColor: tileColor,
           leading: Text(index.toString()),
           title: Text(
             service.name,
@@ -664,7 +692,8 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
 
   Future<void> _editExpensesService(ServicesModel service, int index) async {
     _setValues(service);
-    await _showAddDialogue(isExpenses: true, isEdit: true, index: index);
+    await _showAddDialogue(
+        isExpenses: true, isEdit: true, index: index, id: service.id);
   }
 
   Future<void> _editSavingsService(ServicesModel service, int index) async {

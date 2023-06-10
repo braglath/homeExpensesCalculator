@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:homeexpensecalculator/screens/services/services_screen.dart';
 import 'package:homeexpensecalculator/utils/app_providers.dart';
 import 'package:homeexpensecalculator/utils/app_theme.dart';
 import 'package:provider/provider.dart';
 
-
-import 'package:homeexpensecalculator/screens/registration/home_setup.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +19,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'Home Expense Calculator',
           theme: AppTheme.light,
-          home: const RegistrationHomeSetupScreen(),
+          home: const ServicesView(),
         ),
       );
 }

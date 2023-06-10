@@ -9,13 +9,14 @@ String individualServiceModelToJson(IndividualServiceModel data) =>
 class IndividualServiceModel {
   factory IndividualServiceModel.fromJson(Map<String, dynamic> json) =>
       IndividualServiceModel(
+        id: json["id"] ?? 0,
         type: json["type"] ?? 0,
         name: json["name"] ?? '',
-        startDate: json["start_date"] != null
-            ? DateTime.parse(json["start_date"])
+        startDate: json["startDate"] != null
+            ? DateTime.parse(json["startDate"])
             : DateTime.now(),
-        endDate: json["end_date"] != null
-            ? DateTime.parse(json["end_date"])
+        endDate: json["endate"] != null
+            ? DateTime.parse(json["endate"])
             : DateTime.now(),
         comment: json["comment"] ?? '',
         cost: json["cost"] ?? 0,
@@ -28,8 +29,9 @@ class IndividualServiceModel {
     required this.endDate,
     required this.comment,
     required this.cost,
+    this.id,
   });
-
+  final int? id;
   final int type;
   final String name;
   final DateTime startDate;
@@ -46,6 +48,7 @@ class IndividualServiceModel {
     int? cost,
   }) =>
       IndividualServiceModel(
+        id: id ?? 0,
         type: type ?? this.type,
         name: name ?? this.name,
         startDate: startDate ?? this.startDate,
@@ -55,11 +58,12 @@ class IndividualServiceModel {
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
+        "id": id,
         "type": type,
         "name": name,
-        "start_date":
+        "startDate":
             "${startDate.year.toString().padLeft(4, '0')}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}",
-        "end_date":
+        "endate":
             "${endDate.year.toString().padLeft(4, '0')}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}",
         "comment": comment,
         "cost": cost,

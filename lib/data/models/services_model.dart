@@ -2,6 +2,7 @@ import 'package:homeexpensecalculator/utils/app_enum.dart';
 
 class ServicesModel {
   ServicesModel({
+    required this.id,
     required this.serviceType,
     required this.name,
     required this.cost,
@@ -9,6 +10,7 @@ class ServicesModel {
     required this.endDate,
     required this.comment,
   });
+  int id;
   ServiceType serviceType;
   String name;
   int cost;
