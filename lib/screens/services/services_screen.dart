@@ -1,6 +1,7 @@
+import 'package:cool_dropdown/cool_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:homeexpensecalculator/data/models/services_model.dart';
+import 'package:homeexpensecalculator/data/models/individual_service_model.dart';
 import 'package:homeexpensecalculator/helpers/extensions/ext_on_context.dart';
 import 'package:homeexpensecalculator/helpers/extensions/ext_on_date_time.dart';
 import 'package:homeexpensecalculator/helpers/extensions/ext_on_int.dart';
@@ -14,6 +15,7 @@ import 'package:homeexpensecalculator/providers/services/services_provider.dart'
 import 'package:homeexpensecalculator/utils/app_constants.dart';
 import 'package:homeexpensecalculator/utils/app_enum.dart';
 import 'package:homeexpensecalculator/utils/app_icons.dart';
+import 'package:homeexpensecalculator/utils/asset_paths.dart';
 import 'package:homeexpensecalculator/widgets/common_elevated_button.dart';
 import 'package:homeexpensecalculator/widgets/common_scaffold.dart';
 import 'package:homeexpensecalculator/widgets/slidable_widget.dart';
@@ -37,53 +39,151 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
   final TextEditingController endDateTextController = TextEditingController();
   final GlobalKey<FormState> endDateFieldFormKey = GlobalKey<FormState>();
 
+  final ScrollController scrollController = ScrollController();
+  final DropdownController dropDownController = DropdownController();
+
   DateTime? startDate;
   DateTime? endDate;
 
   @override
   void initState() {
     super.initState();
+    scrollController.addListener(() {
+      if (scrollController.position.pixels ==
+          scrollController.position.minScrollExtent) {
+        context.read<ServicesProvider>().setIsAppBarExpanded(true);
+      } else {
+        context.read<ServicesProvider>().setIsAppBarExpanded(false);
+      }
+    });
     // ignore: discarded_futures
     context.read<ServicesProvider>().viewModelInitState();
   }
 
   @override
   void dispose() {
+    scrollController.dispose();
     titleTextController.dispose();
     amountTextController.dispose();
     startDateTextController.dispose();
     endDateTextController.dispose();
+    dropDownController.dispose();
     context.read<ServicesProvider>().viewModelDisposeState();
     super.dispose();
   }
 
   @override
-  Widget buildBody(BuildContext context) => Column(
-        children: <Widget>[
-          _topEarningCard(),
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: <Widget>[
-                  Consumer<ServicesProvider>(
-                      builder: (_, ServicesProvider viewModel, __) => _section(
-                          serviceType: ServiceType.expense,
-                          amount: viewModel.totalExpenses)),
-                  const SizedBox(height: 16),
-                  Consumer<ServicesProvider>(
-                      builder: (_, ServicesProvider viewModel, __) => _section(
-                          serviceType: ServiceType.savings,
-                          amount: viewModel.totalSavings)),
-                  const SizedBox(height: 25),
-                ],
+  Widget buildBody(BuildContext context) => CustomScrollView(
+        controller: scrollController,
+        physics: const BouncingScrollPhysics(),
+        slivers: <Widget>[
+          SliverAppBar(
+            pinned: true,
+            leading: IconButton(
+                onPressed: () {
+                  //TODO: implement back press
+                },
+                icon: AppIcons.backIcon),
+            expandedHeight: 225,
+            elevation: 8,
+            scrolledUnderElevation: 8,
+            title: const Text("Balance"),
+            actions: <Widget>[
+              _participantsDropDown(),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              title: AnimatedCrossFade(
+                  firstChild: _balanceCard(context),
+                  secondChild: SizedBox.fromSize(),
+                  crossFadeState:
+                      context.watch<ServicesProvider>().isAppBarExpanded
+                          ? CrossFadeState.showFirst
+                          : CrossFadeState.showSecond,
+                  duration: const Duration(milliseconds: 500)),
+
+              centerTitle: true,
+              // _topEarningCard(),
+              background: Image.asset(
+                AssetPaths.homeSetup,
+                fit: BoxFit.cover,
               ),
             ),
           ),
+
+          SliverToBoxAdapter(
+            child: Consumer<ServicesProvider>(
+                builder: (_, ServicesProvider viewModel, __) => _section(
+                    serviceType: ServiceType.expense,
+                    amount: viewModel.totalExpenses)),
+          ),
+          // ),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+          SliverToBoxAdapter(
+            child: Consumer<ServicesProvider>(
+                builder: (_, ServicesProvider viewModel, __) => _section(
+                    serviceType: ServiceType.savings,
+                    amount: viewModel.totalSavings)),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 25)),
         ],
       );
 
-  Widget _topEarningCard() {
+  Padding _participantsDropDown() => Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: CoolDropdown<int>(
+          controller: dropDownController,
+          dropdownList:
+              context.watch<ServicesProvider>().participantsDropDownList,
+          defaultItem:
+              context.watch<ServicesProvider>().participantsDropDownList[0],
+          onChange: (int value) async {
+            if (dropDownController.isError) {
+              await dropDownController.resetError();
+            }
+            dropDownController.close();
+          },
+          onOpen: null,
+          resultOptions: ResultOptions(
+            boxDecoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.5),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                boxShadow: const <BoxShadow>[
+                  BoxShadow(
+                      color: Color(0x1a9E9E9E),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                      offset: Offset(0, 1))
+                ]),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            width: 150,
+            icon: const SizedBox(
+              width: 10,
+              height: 10,
+              child: CustomPaint(
+                painter: DropdownArrowPainter(color: Colors.blue),
+              ),
+            ),
+            render: ResultRender.all,
+          ),
+          dropdownOptions: const DropdownOptions(
+              gap: DropdownGap.all(5),
+              borderSide: BorderSide(width: 1, color: Colors.blueAccent),
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              align: DropdownAlign.left,
+              animationType: DropdownAnimationType.size),
+          dropdownItemOptions: DropdownItemOptions(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              render: DropdownItemRender.all,
+              height: 50,
+              selectedBoxDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8), color: Colors.blue),
+              selectedPadding: const EdgeInsets.symmetric(horizontal: 12),
+              selectedTextStyle: const TextStyle(color: Colors.white)),
+        ),
+      );
+
+  Container _balanceCard(BuildContext context) {
     final int earnings = context.read<ServicesProvider>().earnings;
     final int balance = context.read<ServicesProvider>().balance;
 
@@ -95,31 +195,26 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
                 ? Colors.yellowAccent
                 // above 15 percent
                 : Colors.greenAccent;
-
     return Container(
       width: MediaQuery.of(context).size.width,
-      padding: AppConstants.pad16,
-      margin: AppConstants.pad16,
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16), color: Colors.blue[800]),
+        color: Colors.blue[400]!.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           RichText(
               text: TextSpan(children: <TextSpan>[
-            TextSpan(
-              text: "Earning: ",
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineSmall!
-                  .copyWith(color: Colors.white),
-            ),
+            const TextSpan(text: "Earning: "),
             TextSpan(
               text: earnings.toString(),
               style: Theme.of(context)
                   .textTheme
-                  .headlineMedium!
+                  .bodyLarge!
                   .copyWith(color: Colors.white),
             ),
           ])),
@@ -135,18 +230,12 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
               ),
               child: RichText(
                   text: TextSpan(children: <TextSpan>[
-                TextSpan(
-                  text: "Balance: ",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge!
-                      .copyWith(color: Colors.white),
-                ),
+                const TextSpan(text: "Balance: "),
                 TextSpan(
                   text: balance.toString(),
                   style: Theme.of(context)
                       .textTheme
-                      .headlineSmall!
+                      .bodyLarge!
                       .copyWith(color: Colors.white),
                 ),
               ])),
@@ -174,7 +263,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
       );
 
   Widget _expensesListView() {
-    final List<ServicesModel> expensesList =
+    final List<IndividualServiceModel> expensesList =
         context.watch<ServicesProvider>().expensesList;
 
     return ReorderableListView.builder(
@@ -188,7 +277,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
             .reOrderExpensesList(oldIndex, newIndex);
       },
       itemBuilder: (BuildContext context, int index) {
-        final ServicesModel service = expensesList[index];
+        final IndividualServiceModel service = expensesList[index];
 
         return SlidableWidget(
           key: Key('$index'),
@@ -233,9 +322,9 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
                                   FocusScope.of(context).unfocus();
                                   Future<void>.delayed(
                                       Duration.zero,
-                                      () => context
+                                      () async => context
                                           .read<ServicesProvider>()
-                                          .addServiceToSavingsList(service));
+                                          .moveServiceToSavingsList(service));
                                 },
                                 deleteOnTap: () async => context
                                     .read<ServicesProvider>()
@@ -250,7 +339,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
   }
 
   Widget _savingsListView() {
-    final List<ServicesModel> savingsList =
+    final List<IndividualServiceModel> savingsList =
         context.watch<ServicesProvider>().savingsList;
 
     return ReorderableListView.builder(
@@ -262,13 +351,13 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
         context.read<ServicesProvider>().reOrderSavingsList(oldIndex, newIndex);
       },
       itemBuilder: (BuildContext context, int index) {
-        final ServicesModel service = savingsList[index];
+        final IndividualServiceModel service = savingsList[index];
         return SlidableWidget(
             key: Key('$index'),
             leftBtnOnPressed: (_) async {
               await _editSavingsService(service, index);
             },
-            rightBtnOnPressed: (_) => context
+            rightBtnOnPressed: (_) async => context
                 .read<ServicesProvider>()
                 .deleteServiceFromSavingsList(service),
             child: Column(
@@ -310,9 +399,9 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
                                     Duration.zero,
                                     () async => context
                                         .read<ServicesProvider>()
-                                        .addServiceToExpensesList(service));
+                                        .moveServiceToExpensesList(service));
                               },
-                              deleteOnTap: () => context
+                              deleteOnTap: () async => context
                                   .read<ServicesProvider>()
                                   .deleteServiceFromSavingsList(service),
                             );
@@ -332,7 +421,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
         context,
         title:
             "${isEdit ? "Edit" : "Add"} ${isExpenses ? 'Expenses' : 'Savings'}",
-        mainContent: _addItemsWidget(),
+        mainContent: _addItemsWidget(isEdit),
         onCancel: (BuildContext ctx) {
           ctx.pop();
           _clearAllValues();
@@ -341,9 +430,9 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
         onAction: (BuildContext ctx) async {
           if (!_allFieldsValidationStatus()) return;
           // else all fields are valid
-          final ServicesModel service = ServicesModel(
+          final IndividualServiceModel service = IndividualServiceModel(
             id: id ?? 0,
-            serviceType: isExpenses ? ServiceType.expense : ServiceType.savings,
+            type: isExpenses ? 1 : 2,
             name: titleTextController.text,
             cost: amountTextController.text.toInt,
             startDate: startDate!,
@@ -356,7 +445,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
                   .read<ServicesProvider>()
                   .updateExpensesService(service, index!);
             } else {
-              context
+              await context
                   .read<ServicesProvider>()
                   .updateSavingsService(service, index!);
             }
@@ -365,10 +454,13 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
             await context.read<ServicesProvider>().addService(service);
           }
           if (mounted) await ctx.pop();
+
+          Future<dynamic>.delayed(
+              const Duration(milliseconds: 200), () => _clearAllValues());
         },
       );
 
-  Widget _addItemsWidget() => Column(
+  Widget _addItemsWidget(bool isEditService) => Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Form(
@@ -379,7 +471,15 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
               keyboardType: TextInputType.name,
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(hintText: 'Title'),
-              validator: (String? title) => emptyValidation(title),
+              validator: (String? title) => isEditService
+                  ? emptyValidation(title)
+                  : checkServiceAlreadyExists(
+                      title,
+                      List<IndividualServiceModel>.from(<
+                          IndividualServiceModel>[
+                        ...context.read<ServicesProvider>().expensesList,
+                        ...context.read<ServicesProvider>().savingsList
+                      ])),
             ),
           ),
           AppConstants.height10,
@@ -437,12 +537,12 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
                         hintText: 'End Date',
                         suffixIcon: IconButton(
                           onPressed: () async {
-                            await _setEndDate();
+                            await _setEndDate(firstDate: startDate);
                           },
                           icon: AppIcons.date,
                         )),
                     onTap: () async {
-                      await _setEndDate();
+                      await _setEndDate(firstDate: startDate);
                     },
                     validator: (String? endDate) => emptyValidation(endDate),
                   ),
@@ -559,7 +659,7 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
   }
 
   Widget _individualService(
-          {required ServicesModel service,
+          {required IndividualServiceModel service,
           required int index,
           required Function(LongPressStartDetails)? onLongPressStart,
           required Color? tileColor}) =>
@@ -663,9 +763,10 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
     startDate = pickedDate;
   }
 
-  Future<void> _setEndDate() async {
+  Future<void> _setEndDate({required DateTime? firstDate}) async {
     FocusScope.of(context).unfocus();
-    final DateTime? pickedDate = await DatePickerHelper.selectDate(context);
+    final DateTime? pickedDate =
+        await DatePickerHelper.selectDate(context, firstDate);
     if (pickedDate == null) return;
     // else date picked
     final String formattedDate = pickedDate.formattedMonth;
@@ -690,18 +791,20 @@ class _ServicesViewState extends CommonScaffold<ServicesView>
     endDate ??= null;
   }
 
-  Future<void> _editExpensesService(ServicesModel service, int index) async {
+  Future<void> _editExpensesService(
+      IndividualServiceModel service, int index) async {
     _setValues(service);
     await _showAddDialogue(
         isExpenses: true, isEdit: true, index: index, id: service.id);
   }
 
-  Future<void> _editSavingsService(ServicesModel service, int index) async {
+  Future<void> _editSavingsService(
+      IndividualServiceModel service, int index) async {
     _setValues(service);
     await _showAddDialogue(isExpenses: false, isEdit: true, index: index);
   }
 
-  void _setValues(ServicesModel service) {
+  void _setValues(IndividualServiceModel service) {
     titleTextController.text = service.name;
     amountTextController.text = service.cost.toString();
     startDateTextController.text = service.startDate.formattedMonth;

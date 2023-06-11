@@ -1,46 +1,60 @@
+import 'package:cool_dropdown/models/cool_dropdown_item.dart';
 import 'package:flutter/material.dart';
-import 'package:homeexpensecalculator/data/models/services_model.dart';
+import 'package:homeexpensecalculator/data/models/participant_model.dart';
 import 'package:homeexpensecalculator/data/storage/expenses_storage_operations.dart';
-import 'package:homeexpensecalculator/data/storage/individual_service_model_storage.dart';
+import 'package:homeexpensecalculator/data/models/individual_service_model.dart';
+import 'package:homeexpensecalculator/data/storage/savings_storage_operations.dart';
 import 'package:homeexpensecalculator/data/storage/storage_operations.dart';
-import 'package:homeexpensecalculator/utils/app_enum.dart';
 import 'package:sqflite/sqlite_api.dart';
 
 class ServicesProvider extends ChangeNotifier {
-  final List<ServicesModel> _savingsList = <ServicesModel>[
-    ServicesModel(
+  final List<IndividualServiceModel> _savingsList = <IndividualServiceModel>[];
+  List<IndividualServiceModel> get savingsList => _savingsList;
+
+  final List<IndividualServiceModel> _expensesList = <IndividualServiceModel>[];
+  List<IndividualServiceModel> get expensesList => _expensesList;
+
+  final List<ParticipantModel> _participantsList = <ParticipantModel>[
+    ParticipantModel(
+      homeCode: 'testHome',
       id: 0,
-      serviceType: ServiceType.savings,
-      name: "Saravana Stores Gold Savings",
-      cost: 5000,
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
-      comment: '',
+      isAdmin: 0,
+      name: 'Braglath',
+      image:
+          'https://cdn.pixabay.com/photo/2014/04/03/10/32/businessman-310819_1280.png',
+      phonenumber: '8939243462',
+      income: 74000,
+      addedOn: DateTime.now(),
     ),
-    ServicesModel(
-      id: 0,
-      serviceType: ServiceType.savings,
-      name: "RD",
-      cost: 10000,
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
-      comment: '',
+    ParticipantModel(
+      homeCode: 'testHome',
+      id: 1,
+      isAdmin: 1,
+      name: 'Santhiya',
+      image:
+          'https://cdn.pixabay.com/photo/2021/07/19/04/36/woman-6477171_1280.jpg',
+      phonenumber: '9840620323',
+      income: 19000,
+      addedOn: DateTime.now(),
     ),
-    ServicesModel(
-      id: 0,
-      serviceType: ServiceType.savings,
-      name: "Stocks",
-      cost: 200,
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
-      comment: '',
+    ParticipantModel(
+      homeCode: 'testHome',
+      id: 2,
+      isAdmin: 1,
+      name: 'Aarush Anjan',
+      image: '',
+      phonenumber: '9840620323',
+      income: 0,
+      addedOn: DateTime.now(),
     ),
   ];
-  List<ServicesModel> get savingsList => _savingsList;
+  List<ParticipantModel> get participantsList => _participantsList;
 
-  final List<ServicesModel> _expensesList = <ServicesModel>[];
+  List<CoolDropdownItem<int>> participantsDropDownList =
+      <CoolDropdownItem<int>>[];
 
-  List<ServicesModel> get expensesList => _expensesList;
+  bool _isAppBarExpanded = true;
+  bool get isAppBarExpanded => _isAppBarExpanded;
 
   final int _earnings = 74000;
   int get earnings => _earnings;
@@ -67,25 +81,55 @@ class ServicesProvider extends ChangeNotifier {
   Database? database;
 
   Future<void> viewModelInitState() async {
+    addParticipantsToDropDownList();
     database = await DatabaseOperations.db();
     await getExpensesListFromStorage();
+    await getSavingsListFromStorage();
     addAmount();
+  }
+
+  void addParticipantsToDropDownList() {
+    for (ParticipantModel participant in _participantsList) {
+      participantsDropDownList.add(
+        CoolDropdownItem<int>(
+            label: participant.name,
+            icon: SizedBox(
+              height: 25,
+              width: 25,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(25),
+                child: Image.network(
+                  participant.image,
+                  errorBuilder: (_, __, ___) => CircleAvatar(
+                    backgroundColor: Colors.grey[300],
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            value: participant.id),
+      );
+    }
+  }
+
+  void setIsAppBarExpanded(bool status) {
+    _isAppBarExpanded = status;
+    notifyListeners();
   }
 
   Future<void> getExpensesListFromStorage() async {
     final List<IndividualServiceModel> listFromStorage =
         await ExpensesStorageOperations.getAllExpenses();
-    final List<ServicesModel> valueList = listFromStorage
-        .map((IndividualServiceModel e) => ServicesModel(
-            id: e.id ?? 0,
-            serviceType: ServiceType.expense,
-            name: e.name,
-            cost: e.cost,
-            startDate: e.startDate,
-            endDate: e.endDate,
-            comment: e.comment))
-        .toList();
+    final List<IndividualServiceModel> valueList = listFromStorage;
     _expensesList.addAll(valueList);
+    notifyListeners();
+  }
+
+  Future<void> getSavingsListFromStorage() async {
+    final List<IndividualServiceModel> listFromStorage =
+        await SavingsStorageOperations.getAllSavings();
+    final List<IndividualServiceModel> valueList = listFromStorage;
+    _savingsList.addAll(valueList);
     notifyListeners();
   }
 
@@ -115,16 +159,16 @@ class ServicesProvider extends ChangeNotifier {
   }
 
   void addAmount() {
-    final List<ServicesModel> expensesList = _expensesList;
+    final List<IndividualServiceModel> expensesList = _expensesList;
 
-    final List<ServicesModel> savingsList = _savingsList;
+    final List<IndividualServiceModel> savingsList = _savingsList;
     _totalExpenses = 0;
     _balance = 0;
-    for (ServicesModel service in expensesList) {
+    for (IndividualServiceModel service in expensesList) {
       _totalExpenses += service.cost;
     }
     _totalSavings = 0;
-    for (ServicesModel service in savingsList) {
+    for (IndividualServiceModel service in savingsList) {
       _totalSavings += service.cost;
     }
     _balance = earnings - (_totalExpenses + _totalSavings);
@@ -150,19 +194,21 @@ class ServicesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addService(ServicesModel service) async {
-    if (service.serviceType == ServiceType.expense) {
+  Future<void> addService(IndividualServiceModel service) async {
+    final IndividualServiceModel newService = IndividualServiceModel(
+      type: service.type,
+      name: service.name,
+      startDate: service.startDate,
+      endDate: service.endDate,
+      comment: service.comment,
+      cost: service.cost,
+    );
+    if (service.type == 1) {
+      await ExpensesStorageOperations.addExpenses(newService);
       _expensesList.add(service);
       addTotalExpenses(service.cost);
-      await ExpensesStorageOperations.addExpenses(IndividualServiceModel(
-        type: 1,
-        name: service.name,
-        startDate: service.startDate,
-        endDate: service.endDate,
-        comment: service.comment,
-        cost: service.cost,
-      ));
     } else {
+      await SavingsStorageOperations.addSaving(newService);
       _savingsList.add(service);
       addTotalSavings(service.cost);
     }
@@ -170,31 +216,39 @@ class ServicesProvider extends ChangeNotifier {
   }
 
   void reOrderExpensesList(int oldIndex, int newIndex) {
-    final ServicesModel service = _expensesList.removeAt(oldIndex);
+    final IndividualServiceModel service = _expensesList.removeAt(oldIndex);
     _expensesList.insert(newIndex, service);
     notifyListeners();
   }
 
   void reOrderSavingsList(int oldIndex, int newIndex) {
-    final ServicesModel service = _savingsList.removeAt(oldIndex);
+    final IndividualServiceModel service = _savingsList.removeAt(oldIndex);
     _savingsList.insert(newIndex, service);
     notifyListeners();
   }
 
-  Future<void> deleteServiceFromExpensesList(ServicesModel service) async {
+  Future<void> deleteServiceFromExpensesList(
+      IndividualServiceModel service) async {
     _expensesList.remove(service);
-    await ExpensesStorageOperations.deleteExpense(service.id);
+    if (service.id == null) return;
+    await ExpensesStorageOperations.deleteExpense(service.id!);
     addAmount();
     notifyListeners();
   }
 
-  void deleteServiceFromSavingsList(ServicesModel service) {
+  Future<void> deleteServiceFromSavingsList(
+      IndividualServiceModel service) async {
+    if (service.id == null) return;
+    final bool isDeleted =
+        await SavingsStorageOperations.deleteSaving(service.id!);
+    if (!isDeleted) return;
     _savingsList.remove(service);
     addAmount();
     notifyListeners();
   }
 
-  Future<void> updateExpensesService(ServicesModel service, int index) async {
+  Future<void> updateExpensesService(
+      IndividualServiceModel service, int index) async {
     _expensesList
       ..removeAt(index)
       ..insert(index, service);
@@ -211,7 +265,10 @@ class ServicesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSavingsService(ServicesModel service, int index) {
+  Future<void> updateSavingsService(
+      IndividualServiceModel service, int index) async {
+    if (service.id == null) return;
+    await SavingsStorageOperations.updateSavings(service);
     _savingsList
       ..removeAt(index)
       ..insert(index, service);
@@ -219,14 +276,24 @@ class ServicesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addServiceToExpensesList(ServicesModel service) async {
+  Future<void> moveServiceToExpensesList(IndividualServiceModel service) async {
+    if (service.id == null) return;
+    final bool isDeleted =
+        await SavingsStorageOperations.deleteSaving(service.id!);
+    if (!isDeleted) return;
+    await ExpensesStorageOperations.addExpenses(service);
     _savingsList.remove(service);
     _expensesList.insert(0, service);
     addAmount();
     notifyListeners();
   }
 
-  void addServiceToSavingsList(ServicesModel service) {
+  Future<void> moveServiceToSavingsList(IndividualServiceModel service) async {
+    if (service.id == null) return;
+    final bool isDeleted =
+        await ExpensesStorageOperations.deleteExpense(service.id!);
+    if (!isDeleted) return;
+    await SavingsStorageOperations.addSaving(service);
     _expensesList.remove(service);
     _savingsList.insert(0, service);
     addAmount();

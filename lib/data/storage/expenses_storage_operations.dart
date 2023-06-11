@@ -1,4 +1,4 @@
-import 'package:homeexpensecalculator/data/storage/individual_service_model_storage.dart';
+import 'package:homeexpensecalculator/data/models/individual_service_model.dart';
 import 'package:homeexpensecalculator/data/storage/storage_operations.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -7,6 +7,18 @@ class ExpensesStorageOperations {
   factory ExpensesStorageOperations() => _singleton;
   static final ExpensesStorageOperations _singleton =
       ExpensesStorageOperations._instance();
+
+  static Future<List<IndividualServiceModel>> getAllExpenses() async {
+    final Database db = await DatabaseOperations.db();
+    final List<Map<String, Object?>> valuesList =
+        await db.query('expenses', orderBy: 'id DESC');
+    final List<IndividualServiceModel> expensesList =
+        <IndividualServiceModel>[];
+    for (Map<String, Object?> value in valuesList) {
+      expensesList.add(IndividualServiceModel.fromJson(value));
+    }
+    return expensesList;
+  }
 
   static Future<int> addExpenses(IndividualServiceModel expense) async {
     final Database db = await DatabaseOperations.db();
@@ -21,18 +33,6 @@ class ExpensesStorageOperations {
     final int id = await db.insert('expenses', expenses,
         conflictAlgorithm: ConflictAlgorithm.replace);
     return id;
-  }
-
-  static Future<List<IndividualServiceModel>> getAllExpenses() async {
-    final Database db = await DatabaseOperations.db();
-    final List<Map<String, Object?>> valuesList =
-        await db.query('expenses', orderBy: 'id');
-    final List<IndividualServiceModel> expensesList =
-        <IndividualServiceModel>[];
-    for (Map<String, Object?> value in valuesList) {
-      expensesList.add(IndividualServiceModel.fromJson(value));
-    }
-    return expensesList;
   }
 
   static Future<int> updateExpense(IndividualServiceModel expense) async {

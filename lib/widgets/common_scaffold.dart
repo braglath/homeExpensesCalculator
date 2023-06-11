@@ -4,9 +4,7 @@ abstract class CommonScaffold<S extends StatefulWidget> extends State<S> {
   @protected
   Widget buildBody(BuildContext context);
 
-  PreferredSizeWidget? buildAppBar() => AppBar(
-        automaticallyImplyLeading: false,
-      );
+  PreferredSizeWidget? buildAppBar() => null;
 
   ///Default FloatingActionButton
   Widget? buildFloatingActionButton() => null;

@@ -4,7 +4,6 @@ import 'package:homeexpensecalculator/utils/app_providers.dart';
 import 'package:homeexpensecalculator/utils/app_theme.dart';
 import 'package:provider/provider.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
