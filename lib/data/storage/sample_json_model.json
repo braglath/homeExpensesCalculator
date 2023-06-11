@@ -1,10 +1,7 @@
 {
   "id": 0,
-  "homeCode": "home",
-  "name": "braglath",
-  "phonenumber": "8939243462",
-  "image": "https://www.myProfilePicture.com/",
-  "income": 74000,
-  "isAdmin": 0,
-  "addedOn": "2025:05:12"
+  "name": "home",
+  "code": "braglath",
+  "encryption": "8939243462",
+  "startDate": "2025:05:12"
 }

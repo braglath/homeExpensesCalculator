@@ -43,6 +43,8 @@ dependencies:
   encrypt: ^5.0.1
   qr_flutter: ^4.1.0
   cool_dropdown: ^2.1.0
+  screenshot: ^1.3.0
+  image_gallery_saver: ^2.0.1
 
 dev_dependencies:
   flutter_test:

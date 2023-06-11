@@ -1,5 +1,8 @@
 {
   "cSpell.words": ["homeexpensecalculator"],
   "todo-tree.tree.showBadges": true,
-  "todo-tree.tree.scanMode": "current file"
+  "todo-tree.tree.scanMode": "current file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  }
 }

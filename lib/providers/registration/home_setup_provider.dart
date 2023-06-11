@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:homeexpensecalculator/data/models/home_model.dart';
+import 'package:homeexpensecalculator/data/storage/home_storage_operations.dart';
 import 'package:homeexpensecalculator/helpers/extensions/ext_on_string.dart';
 
 class RegistrationHomeSetupProvider extends ChangeNotifier {
@@ -23,6 +25,9 @@ class RegistrationHomeSetupProvider extends ChangeNotifier {
 
   bool _showNextBtn = false;
   bool get showNextBtn => _showNextBtn;
+
+  int? _createdHomeId;
+  int? get createdHomeId => _createdHomeId;
 
   void setPageLoading(bool status) {
     _isPageLoading = status;
@@ -55,6 +60,26 @@ class RegistrationHomeSetupProvider extends ChangeNotifier {
   }
 
   Future<void> navigateTo(PageController pageController, int i) async {
+    await pageController.animateToPage(i,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.fastOutSlowIn);
+    _currentPageIndex = i;
+    notifyListeners();
+  }
+
+  Future<void> addOrUpdateHome({
+    required HomeModel home,
+    required PageController pageController,
+    required int i,
+  }) async {
+    int? homeId;
+    if (_createdHomeId == null) {
+      homeId = await HomeStorageOperations.addHome(home);
+    } else {
+      homeId = await HomeStorageOperations.updateHome(home);
+    }
+    if (homeId == null) return;
+    _createdHomeId = homeId;
     await pageController.animateToPage(i,
         duration: const Duration(milliseconds: 600),
         curve: Curves.fastOutSlowIn);
